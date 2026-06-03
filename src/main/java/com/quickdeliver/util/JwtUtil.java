@@ -31,7 +31,7 @@ public class JwtUtil {
                 .compact();
     }
 
-    public String extractPhone(String token) {
+    public String extractEmail(String token) {
         return getClaims(token).getSubject();
     }
 

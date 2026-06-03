@@ -40,7 +40,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         // Subject is now email (not phone)
-        String email = jwtUtil.extractPhone(token); // method name kept, extracts subject
+        String email = jwtUtil.extractEmail(token); // method name kept, extracts subject
         String role  = jwtUtil.extractRole(token);
 
         UsernamePasswordAuthenticationToken auth =

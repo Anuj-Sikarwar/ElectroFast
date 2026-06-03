@@ -5,6 +5,7 @@ import com.quickdeliver.dto.response.ShopResponse;
 import com.quickdeliver.entity.City;
 import com.quickdeliver.entity.Shop;
 import com.quickdeliver.entity.User;
+import com.quickdeliver.enums.Role;
 import com.quickdeliver.enums.ShopStatus;
 import com.quickdeliver.exception.ResourceNotFoundException;
 import com.quickdeliver.repository.CityRepository;
@@ -24,12 +25,17 @@ public class ShopService {
     private final CityRepository cityRepository;
     private final UserRepository userRepository;
 
+    @Transactional
     public ShopResponse register(ShopRequest request, String registeredByPhone) {
         City city = cityRepository.findById(request.getCityId())
                 .orElseThrow(() -> new ResourceNotFoundException("City not found: " + request.getCityId()));
 
-        User member = userRepository.findByPhone(registeredByPhone)
+        User member = userRepository.findByPhone(request.getManagerPhone())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        if (!(member.getRole() == Role.MEMBER || member.getRole() == Role.ADMIN)) {
+            throw new IllegalArgumentException("User must be a MEMBER or ADMIN");
+        }
 
         Shop shop = new Shop();
         shop.setName(request.getName());
@@ -45,6 +51,8 @@ public class ShopService {
         return ShopResponse.from(shopRepository.save(shop));
     }
 
+
+    @Transactional
     public ShopResponse update(Long shopId, ShopRequest request) {
         Shop shop = getShopOrThrow(shopId);
         City city = cityRepository.findById(request.getCityId())
@@ -61,7 +69,7 @@ public class ShopService {
         return ShopResponse.from(shopRepository.save(shop));
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public void setStatus(Long shopId, ShopStatus status) {
         Shop shop = getShopOrThrow(shopId);
         shop.setStatus(status);
